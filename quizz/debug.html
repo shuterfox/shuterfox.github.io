@@ -3,7 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manette</title>
+    <title>Debug</title>
     <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
@@ -34,17 +34,10 @@
         <input id="nameInput" placeholder="Ton Nom">
         <button onclick="join()">REJOINDRE</button>
     </div>
-
-    <div id="login">
-        <input id="roomInput" placeholder="CODE (ex: KEYZ)">
-        <input id="nameInput" placeholder="Ton Nom">
-        <button onclick="join()">REJOINDRE</button>
-    </div>
-
     <div id="game-area">
-        <h2 id="welcome"></h2>
-        <input id="answerInput" placeholder="Ta réponse drôle...">
-        <button onclick="send()">ENVOYER À LA TV</button>
+        <h2 id="Show dialog"></h2>
+        <input id="dialogInput" placeholder="Dialog Text">
+        <button onclick="SendDialog()">Send</button>
     </div>
 
     <script>
@@ -77,11 +70,11 @@
             document.getElementById('welcome').innerText = "À toi de jouer !";
         });
 
-        function send() {
-            const text = document.getElementById('answerInput').value;
-            socket.emit('SEND_ANSWER', { roomId: currentRoom, text: text });
-            document.getElementById('answerInput').value = "";
-            alert("Envoyé !");
+        function SendDialog() {
+            const text = document.getElementById('dialogInput').value;
+            socket.emit('SEND_DIALOG', { roomId: currentRoom, text: text });
+            //document.getElementById('dialogInput').value = "";
+            console.log("Dialog sent" + text);
         }
     </script>
 </body>

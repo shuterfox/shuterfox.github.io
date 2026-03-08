@@ -30,11 +30,14 @@ io.on('connection', (socket) => {
             socket.emit('ERROR', 'Salle introuvable');
         }
     });
-
     // 3. Relais des réponses (Joueur -> TV)
     socket.on('SEND_ANSWER', ({ roomId, text }) => {
         // On envoie la réponse uniquement à la TV (le host)
         io.to(roomId).emit('NEW_ANSWER', { player: socket.id, text: text });
+    });
+    socket.on('SEND_DIALOG', ({ roomId, text }) => {
+        // On envoie la réponse uniquement à la TV (le host)
+        io.to(roomId).emit('SHOW_DIALOG', { text: text });
     });
 });
 

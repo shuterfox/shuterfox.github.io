@@ -33,15 +33,40 @@
             border-radius: 10px;
             border: 2px solid #0f3460;
         }
+
+        .dialogue-box {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 20px;
+            background: #222;
+            color: white;
+            padding: 20px;
+            border: 3px solid #555;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .portrait {
+            width: 100%;
+            image-rendering: pixelated;
+            /* Pour un look rétro Game Boy / NES */
+        }
+
+        .text-content {
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Rejoignez la partie sur <br> <span>tonjeu.com</span></h1>
+    <h1>Rejoignez la partie</h1>
     <div id="room-code">CHARGEMENT...</div>
     <div id="status">En attente de joueurs...</div>
     <hr>
-    <div id="answers"></div>
+    <div id="dialogue-container" class="dialogue-box">
+        <img id="character-portrait" src="portrait.png" alt="Character" class="portrait">
+        <div id="dialogue-text" class="text-content"></div>
+    </div>
 
     <script>
         const context = cast.framework.CastReceiverContext.getInstance();
@@ -68,6 +93,25 @@
             card.innerText = data.text;
             answersDiv.appendChild(card);
         });
+
+        socket.on('SHOW_DIALOG', (data) => {
+            console.log(data);
+            speak(data.text, 50);
+        });
+
+        async function speak(text, speed = 50) {
+            const displayElement = document.getElementById('dialogue-text');
+            displayElement.textContent = ""; // Reset du texte précédent
+
+            for (const char of text) {
+                displayElement.textContent += char;
+                // On attend la résolution d'un setTimeout wrappé dans une Promise
+                await new Promise(resolve => setTimeout(resolve, speed));
+            }
+
+            // Événement de fin pour déclencher la suite du gameplay
+            displayElement.dispatchEvent(new CustomEvent('speechFinished'));
+        }
     </script>
 </body>
 
