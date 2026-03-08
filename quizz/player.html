@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manette</title>
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body {
@@ -27,6 +28,7 @@
 </head>
 
 <body>
+    <google-cast-launcher></google-cast-launcher>
     <div id="login">
         <input id="roomInput" placeholder="CODE (ex: KEYZ)">
         <input id="nameInput" placeholder="Ton Nom">
@@ -40,6 +42,20 @@
     </div>
 
     <script>
+        window.__onGCastApiAvailable = function (isAvailable) {
+            if (isAvailable) {
+                initializeCastApi();
+            }
+        };
+
+        function initializeCastApi() {
+            // REMPLACE 'VOTRE_APP_ID' par l'ID de la console Google
+            cast.framework.CastContext.getInstance().setOptions({
+                receiverApplicationId: 'VOTRE_APP_ID',
+                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            });
+        }
+
         const socket = io('https://shuterfox-github-io.onrender.com');
         let currentRoom = "";
 
