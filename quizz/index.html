@@ -5,12 +5,25 @@
     <title>TV Receiver - Party Game</title>
     <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="preload" as="image" href="background.webp">
     <style>
         body {
-            background: #1a1a2e;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            /* Empêche le scroll si le dialogue dépasse */
+
+            /* Configuration de l'image */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('background.webp');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+
+            /* Flexbox pour s'assurer que le contenu reste bien structuré si besoin */
+            display: flex;
+            flex-direction: column;
         }
 
         #room-code {
@@ -35,14 +48,27 @@
         }
 
         .dialogue-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Centrage horizontal */
+            width: 90%;
+            max-width: 800px;
+            z-index: 9999;
+            /* S'assure d'être au-dessus de tout */
+
             display: grid;
-            grid-template-columns: 150px 1fr;
+            grid-template-columns: 120px 1fr;
             gap: 20px;
-            background: #222;
-            color: white;
-            padding: 20px;
-            border: 3px solid #555;
-            font-family: 'Courier New', Courier, monospace;
+            background: rgba(0, 0, 0, 0.85);
+            /* Semi-transparent pour le style */
+            color: #00FF41;
+            /* Vert "Matrix" pour la lisibilité */
+            padding: 15px;
+            border: 2px solid #00FF41;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
         .portrait {
@@ -55,20 +81,72 @@
             font-size: 1.2rem;
             line-height: 1.5;
         }
+
+        .scene-3d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Définit la distance de l'observateur (ajuster entre 500px et 1500px) */
+            perspective: 1000px;
+            pointer-events: none;
+            /* Laisse passer les clics si besoin */
+        }
+
+        #left-screen {
+            position: absolute;
+            top: 31.1%;
+            left: 24.1%;
+            width: 260px;
+            height: 200px;
+
+
+            /* Tes transformations à ajuster dans l'inspecteur */
+            transform: rotateY(7deg) rotateX(-2deg) skewY(0deg);
+
+            padding: 5px;
+            pointer-events: auto;
+            /* Permet d'interagir avec les éléments internes */
+        }
+
+        #right-screen {
+            position: absolute;
+            top: 16.9%;
+            left: 56%;
+            width: 504px;
+            height: 380px;
+
+
+
+            /* Tes transformations à ajuster dans l'inspecteur */
+            transform: rotateY(-19deg) rotateX(0deg) skewY(0.5deg);
+
+            padding: 5px;
+            pointer-events: auto;
+            /* Permet d'interagir avec les éléments internes */
+        }
     </style>
 </head>
 
 <body>
-    <h1>Rejoignez la partie</h1>
-    <div id="room-code">CHARGEMENT...</div>
-    <div id="status">En attente de joueurs...</div>
-    <hr>
+    <div class="scene-3d">
+        <div id="left-screen">
+            <div id="room-code">CHARGEMENT...</div>
+        </div>
+        <div id="right-screen">
+            <div id="status">En attente de joueurs...</div>
+        </div>
+    </div>
+
     <div id="dialogue-container" class="dialogue-box">
-        <img id="character-portrait" src="portrait.png" alt="Character" class="portrait">
+        <img id="character-portrait" src="portrait.webp" alt="Character" class="portrait">
         <div id="dialogue-text" class="text-content"></div>
     </div>
 
     <script>
+        let currentDialogueSession = 0;
+
         const context = cast.framework.CastReceiverContext.getInstance();
         // Remplace par l'URL de ton serveur Render plus tard
         const socket = io('https://shuterfox-github-io.onrender.com');
@@ -96,21 +174,27 @@
 
         socket.on('SHOW_DIALOG', (data) => {
             console.log(data);
-            speak(data.text, 50);
+            speak(data.text);
         });
 
-        async function speak(text, speed = 50) {
+        async function speak(text, speed = 40) {
+            // On incrémente l'ID de session à chaque appel
+            const sessionId = ++currentDialogueSession;
+
             const displayElement = document.getElementById('dialogue-text');
-            displayElement.textContent = ""; // Reset du texte précédent
+            displayElement.textContent = "";
 
             for (const char of text) {
+                // Vérification : si une nouvelle session a commencé, on sort de la boucle
+                if (sessionId !== currentDialogueSession) {
+                    return;
+                }
+
                 displayElement.textContent += char;
-                // On attend la résolution d'un setTimeout wrappé dans une Promise
+
+                // On utilise un helper pour le délai
                 await new Promise(resolve => setTimeout(resolve, speed));
             }
-
-            // Événement de fin pour déclencher la suite du gameplay
-            displayElement.dispatchEvent(new CustomEvent('speechFinished'));
         }
     </script>
 </body>
