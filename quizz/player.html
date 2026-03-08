@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manette</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        #game-area {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login">
+        <input id="roomInput" placeholder="CODE (ex: KEYZ)">
+        <input id="nameInput" placeholder="Ton Nom">
+        <button onclick="join()">REJOINDRE</button>
+    </div>
+
+    <div id="game-area">
+        <h2 id="welcome"></h2>
+        <input id="answerInput" placeholder="Ta réponse drôle...">
+        <button onclick="send()">ENVOYER À LA TV</button>
+    </div>
+
+    <script>
+        const socket = io('https://shuterfox-github-io.onrender.com');
+        let currentRoom = "";
+
+        function join() {
+            currentRoom = document.getElementById('roomInput').value.toUpperCase();
+            const name = document.getElementById('nameInput').value;
+            socket.emit('JOIN_ROOM', { roomId: currentRoom, playerName: name });
+        }
+
+        socket.on('JOIN_SUCCESS', () => {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('welcome').innerText = "À toi de jouer !";
+        });
+
+        function send() {
+            const text = document.getElementById('answerInput').value;
+            socket.emit('SEND_ANSWER', { roomId: currentRoom, text: text });
+            document.getElementById('answerInput').value = "";
+            alert("Envoyé !");
+        }
+    </script>
+</body>
+
+</html>
